@@ -30,6 +30,7 @@ class DynamicMatrixController(SISOControllers):
         # build DMC
         self.DynamicMatrix = np.zeros((self.prediction_horizon, self.control_horizon))
         plant_copy = copy.deepcopy(self.plant)
+        plant_copy.std = 0
         plant_copy.set_input(1)  # Initial input for DMC construction
 
         dmc_constructor = simpy.Environment()
@@ -43,11 +44,13 @@ class DynamicMatrixController(SISOControllers):
                 if i >= j:
                     idx = i - j
                     if idx < len(step_response):
-                        self.DynamicMatrix[i, j] = step_response[idx]
+                        self.DynamicMatrix[i, j] = step_response[idx] + self.plant.rng.normal(0, self.plant.std)  # Add noise to simulate real conditions
                     else:
-                        self.DynamicMatrix[i, j] = step_response[-1]  # Use last value if out of bounds
+                        self.DynamicMatrix[i, j] = step_response[-1] + self.plant.rng.normal(0, self.plant.std)  # Use last value if out of bounds
                 else:
                     self.DynamicMatrix[i, j] = 0.0
+        
+        
         print("Dynamic Matrix:\n", self.DynamicMatrix)
 
 
@@ -62,17 +65,17 @@ class DynamicMatrixController(SISOControllers):
         error_trajectory = self.reference_trajectory - self.prediction_trajectory
 
         # Optimization (DMC control law)
-        # A = (D^T D + λI)^(-1) D^T
+        # A = (D^T D + λI)^(-1) * D^T
         A = self.DynamicMatrix.T @ self.DynamicMatrix # A= D^T D
         A += self.lambda_reg * np.eye(self.control_horizon)  # Regularization
         A = np.linalg.inv(A)  # Invert A
-        A = A @ self.DynamicMatrix.T  
+        A = A @ self.DynamicMatrix.T
 
         delta_u = A @ error_trajectory
 
         # Apply control input constraints
         self.control_trajectory += delta_u
-        self.control_trajectory = np.clip(self.control_trajectory, self.min_control_input, self.max_control_input)
+        # self.control_trajectory = np.clip(self.control_trajectory, self.min_control_input, self.max_control_input)
 
         self.plant.set_input(self.control_trajectory[0])
 
@@ -82,7 +85,6 @@ class DynamicMatrixController(SISOControllers):
     
 
     def run(self, env):
-        self.step()  # Initial step to set first control input
         while True:
             self.step()
             yield env.timeout(self.dt)

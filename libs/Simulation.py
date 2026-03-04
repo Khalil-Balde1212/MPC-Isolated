@@ -12,6 +12,7 @@ class FirstOrderPlant:
         self.u = 0.0  # control input
 
         self.output_history = [] 
+        self.control_history = []
         self.times = []
 
         # non linearities
@@ -39,6 +40,7 @@ class FirstOrderPlant:
 
         # Record output and time history
         self.output_history.append(self.y)
+        self.control_history.append(self.u)
         self.times.append(len(self.output_history) * self.dt)
         return self.y
     
@@ -51,6 +53,7 @@ class FirstOrderPlant:
         self.y = 0.0
         self.u = 0.0
         self.output_history = []
+        self.control_history = []
         self.times = []
 
     def get_steady_state(self):
