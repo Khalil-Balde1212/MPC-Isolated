@@ -6,7 +6,7 @@ from libs.Controller import PIDController
 from libs.MPC import DynamicMatrixController
 
 plant_dt = 0.001
-cont_dt = 0.005
+cont_dt = 0.001
 
 def main():
     env = simpy.Environment()
@@ -18,7 +18,7 @@ def main():
 
     # pid_controller = PIDController(pid_plant, kp=0.00596, ki=0.0284, kd=0.0, dt=cont_dt, setpoint=500)
     pid_controller = PIDController(pid_plant, kp=0.1, ki=0.005, kd=0.0, dt=cont_dt, setpoint=500)
-    dmc_controller = DynamicMatrixController(dmc_plant, dt=cont_dt, setpoint=500, prediction_horizon=10, control_horizon=5, lambda_reg=1.2)
+    dmc_controller = DynamicMatrixController(dmc_plant, dt=cont_dt, setpoint=500, prediction_horizon=10, control_horizon=5, lambda_reg=1.01)
     
 
     # PID

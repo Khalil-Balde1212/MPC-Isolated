@@ -78,6 +78,7 @@ class DynamicMatrixController(SISOControllers):
         # self.control_trajectory = np.clip(self.control_trajectory, self.min_control_input, self.max_control_input)
 
         self.plant.set_input(self.control_trajectory[0])
+        self.control_trajectory = np.roll(self.control_trajectory, -1)  # Shift control trajectory for next step
 
 
         self.update_histories()

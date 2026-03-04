@@ -22,7 +22,7 @@ class FirstOrderPlant:
         # Noise
         self.std = std 
         # random number generator (allows two plants to share same noise)
-        self.rng = rng if rng is not None else np.random
+        self.rng = rng if rng is not None else np.random.RandomState()
 
     def set_input(self, u):
         # clamp input value
